@@ -1,12 +1,40 @@
-version: '3'
+version: "3.1"
 services:
         minecraft:
                 image: itzg/minecraft-server
-                restart: always
                 command: "--noconsole"
                 volumes:
                         - ../minecraft:/data
                 environment:
                         - TYPE=SPIGOT
                         - EULA=TRUE
-                container_name: minecraft          
+                container_name: minecraft
+                ports:
+                        - "25565:25565"
+        jellyfin:
+                image: jellyfin/jellyfin
+                restart: always
+                volumes:
+                        - /external/Anime:/media/Anime:ro
+                        - /external/Movies:/media/Movies:ro
+                        - /external/TV:/media/TV:ro
+                        - /external/Training:/media/Training:ro
+                        - ../jellyfin/config:/config
+                        - ../jellyfin/cache:/cache
+                container_name: jellyfin
+                network_mode: "host"
+        dlna:
+                container_name: dlna
+                image: geekduck/minidlna
+                volumes:
+                        - /external/Anime:/opt/Video/Anime:ro
+                        - /external/Movies:/opt/Video/Movies:ro
+                        - /external/TV:/opt/Video/TV:ro
+                        - /external/Music:/opt/Music:ro
+                        - /external/Training:/media/Video/Training:ro
+                        - /etc/localtime:/etc/localtime:ro
+                network_mode: "host"
+                restart: always
+                container_name: dlna
+
+
