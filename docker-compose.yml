@@ -2,11 +2,86 @@ version: '3'
 services:
         minecraft:
                 image: itzg/minecraft-server
-                restart: always
                 command: "--noconsole"
                 volumes:
                         - ../minecraft:/data
                 environment:
                         - TYPE=SPIGOT
                         - EULA=TRUE
-                container_name: minecraft          
+                container_name: minecraft
+                ports:
+                        - "25565:25565"
+        jellyfin:
+                image: jellyfin/jellyfin
+                restart: always
+                volumes:
+                        - /external/Anime:/media/Anime:ro
+                        - /external/Movies:/media/Movies:ro
+                        - /external/TV:/media/TV:ro
+                        - /external/Training:/media/Training:ro
+                        - /external/Music:/media/Music:ro
+                        - ../jellyfin/config:/config
+                        - ../jellyfin/cache:/cache
+                container_name: jellyfin
+                network_mode: "host"
+        sonarr:
+                container_name: sonarr
+                image: linuxserver/sonarr
+                restart: always
+                volumes:
+                        - /external/Download:/data
+                        - ../sonarr:/config
+                        - /external/TV:/tv
+                        - /external/Anime:/anime
+                ports:
+                        - "8989:8989"
+                environment:
+                        - PUID=0
+                        - GUID=0
+        seedbox:
+                container_name: seedbox
+                cap_add:
+                        - NET_ADMIN
+                image: haugene/transmission-openvpn
+                volumes:
+                        - ../external/Downloads:/data
+                        - ../transmission:/config
+                        - /etc/localtime:/etc/localtime:ro
+                environment:
+                        - CREATE_TUN_DEVICE=true
+                        - OPENVPN_PROVIDER=PIA
+                        - OPENVPN_CONFIG=US\ Chicago
+                        - LOCAL_NETWORK=192.168.0.0/16
+                        - TRANSMISSION_WEB_UI=transmission-web-control
+                ports:
+                        - 9091:9091
+                env_file:
+                        - seedbox.env
+        jackett:
+               container_name: jackett
+               image: linuxserver/jackett
+               volumes:
+                       - ../jackett/config
+                       - /etc/localtime:/etc/localtime:ro
+                       - /external/Downloads:/downloads
+               ports:
+                       - "9117:9117"
+               restart: always
+                       - ../freshrss:/config
+                         #mysql:
+                #container_name: mysql
+                #command: --default-authentication-plugin=mysql_native_password
+                #restart: always
+                #environment:
+                        #MYSQL_ROOT_PASSWORD: password
+                        #image: mysql
+                #tt-rss:
+                #image: linuxserver/tt-rss
+                #container_name: tt-rss
+                #ports:
+                #       - "80:80"
+                #restart: always
+                #volumes:
+                #       - /etc/localtime:/etc/localtime:ro
+                #       - ../tt-rss:/config
+
